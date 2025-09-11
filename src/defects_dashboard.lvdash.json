@@ -1,0 +1,1341 @@
+{
+  "datasets": [
+    {
+      "displayName": "defects",
+      "name": "770a63a5",
+      "parameters": [
+        {
+          "dataType": "STRING",
+          "defaultSelection": {},
+          "displayName": "parameter",
+          "keyword": "parameter"
+        }
+      ],
+      "queryLines": [
+        "WITH defects as (\n",
+        "    SELECT *, \"apex\" as company\n",
+        "    FROM aibi_embedding_doyoung.data.defects_apex\n",
+        "    UNION\n",
+        "    SELECT *, \"synergy\" as company\n",
+        "    FROM aibi_embedding_doyoung.data.defects_synergy\n",
+        "),\n",
+        "orderdetails as (\n",
+        "    SELECT *\n",
+        "    FROM aibi_embedding_doyoung.data.orderdetails_apex\n",
+        "    UNION\n",
+        "    SELECT *\n",
+        "    FROM aibi_embedding_doyoung.data.orderdetails_synergy\n",
+        "),\n",
+        "orders as (\n",
+        "    SELECT *\n",
+        "    FROM aibi_embedding_doyoung.data.orders_apex\n",
+        "    UNION\n",
+        "    SELECT *\n",
+        "    FROM aibi_embedding_doyoung.data.orders_synergy\n",
+        "),\n",
+        "customer as (\n",
+        "    SELECT customerid, customername, contactemail, industry\n",
+        "    FROM aibi_embedding_doyoung.data.customers_apex\n",
+        "    UNION\n",
+        "    SELECT *\n",
+        "    FROM aibi_embedding_doyoung.data.customers_synergy\n",
+        ")\n",
+        "SELECT *\n",
+        "FROM defects d join orderdetails od on d.orderdetailid = od.orderdetailid \n",
+        "    join orders o on od.orderid = o.orderid\n",
+        "    join customer c on o.customerid = c.customerid \n",
+        "WHERE company = LOWER(__aibi_external_value) :parameter "
+      ]
+    }
+  ],
+  "pages": [
+    {
+      "displayName": "Defects Dashboard",
+      "layout": [
+        {
+          "position": {
+            "height": 6,
+            "width": 5,
+            "x": 0,
+            "y": 1
+          },
+          "widget": {
+            "name": "e89dc045",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "770a63a5",
+                  "disaggregated": false,
+                  "fields": [
+                    {
+                      "expression": "`industry`",
+                      "name": "industry"
+                    },
+                    {
+                      "expression": "DATE_TRUNC(\"MONTH\", `ReportDate`)",
+                      "name": "monthly(ReportDate)"
+                    },
+                    {
+                      "expression": "COUNT(`DefectID`)",
+                      "name": "count(DefectID)"
+                    }
+                  ]
+                }
+              }
+            ],
+            "spec": {
+              "encodings": {
+                "color": {
+                  "displayName": "industry",
+                  "fieldName": "industry",
+                  "scale": {
+                    "mappings": [
+                      {
+                        "color": "#3292A8",
+                        "value": "Home Renovation"
+                      },
+                      {
+                        "color": "#99DDB4",
+                        "value": "Real Estate"
+                      },
+                      {
+                        "color": "#4CB5BB",
+                        "value": "Landscaping"
+                      },
+                      {
+                        "color": "#246E8A",
+                        "value": "Construction"
+                      }
+                    ],
+                    "type": "categorical"
+                  }
+                },
+                "label": {
+                  "show": false
+                },
+                "x": {
+                  "displayName": "ReportDate",
+                  "fieldName": "monthly(ReportDate)",
+                  "scale": {
+                    "type": "temporal"
+                  }
+                },
+                "y": {
+                  "displayName": "Count of DefectID",
+                  "fieldName": "count(DefectID)",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                }
+              },
+              "frame": {
+                "showDescription": false,
+                "showTitle": true,
+                "title": "Defects Over Time"
+              },
+              "mark": {
+                "colors": [
+                  "#00A972",
+                  "#8BCAE7",
+                  "#AB4057",
+                  "#99DDB4",
+                  "#FCA4A1",
+                  "#919191",
+                  "#BF7080"
+                ]
+              },
+              "version": 3,
+              "widgetType": "area"
+            }
+          }
+        },
+        {
+          "position": {
+            "height": 1,
+            "width": 2,
+            "x": 2,
+            "y": 0
+          },
+          "widget": {
+            "name": "d78fc4aa",
+            "queries": [
+              {
+                "name": "dashboards/01effa0a6c831cffa69be5249288d046/datasets/01effa0a8aa3168f8530479c7976c8bc_industry",
+                "query": {
+                  "datasetName": "770a63a5",
+                  "disaggregated": false,
+                  "fields": [
+                    {
+                      "expression": "`industry`",
+                      "name": "industry"
+                    },
+                    {
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)",
+                      "name": "industry_associativity"
+                    }
+                  ]
+                }
+              }
+            ],
+            "spec": {
+              "encodings": {
+                "fields": [
+                  {
+                    "displayName": "industry",
+                    "fieldName": "industry",
+                    "queryName": "dashboards/01effa0a6c831cffa69be5249288d046/datasets/01effa0a8aa3168f8530479c7976c8bc_industry"
+                  }
+                ]
+              },
+              "frame": {
+                "showDescription": false,
+                "showTitle": true,
+                "title": "Industry"
+              },
+              "version": 2,
+              "widgetType": "filter-multi-select"
+            }
+          }
+        },
+        {
+          "position": {
+            "height": 1,
+            "width": 2,
+            "x": 4,
+            "y": 0
+          },
+          "widget": {
+            "name": "0fc89a56",
+            "queries": [
+              {
+                "name": "dashboards/01effa0a6c831cffa69be5249288d046/datasets/01effa0a8aa3168f8530479c7976c8bc_ReportDate",
+                "query": {
+                  "datasetName": "770a63a5",
+                  "disaggregated": false,
+                  "fields": [
+                    {
+                      "expression": "`ReportDate`",
+                      "name": "ReportDate"
+                    },
+                    {
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)",
+                      "name": "ReportDate_associativity"
+                    }
+                  ]
+                }
+              }
+            ],
+            "spec": {
+              "encodings": {
+                "fields": [
+                  {
+                    "displayName": "ReportDate",
+                    "fieldName": "ReportDate",
+                    "queryName": "dashboards/01effa0a6c831cffa69be5249288d046/datasets/01effa0a8aa3168f8530479c7976c8bc_ReportDate"
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": ""
+              },
+              "version": 2,
+              "widgetType": "filter-date-range-picker"
+            }
+          }
+        },
+        {
+          "position": {
+            "height": 6,
+            "width": 3,
+            "x": 1,
+            "y": 7
+          },
+          "widget": {
+            "name": "490e750a",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "770a63a5",
+                  "disaggregated": false,
+                  "fields": [
+                    {
+                      "expression": "`Status`",
+                      "name": "Status"
+                    },
+                    {
+                      "expression": "COUNT(DISTINCT `DefectID`)",
+                      "name": "countdistinct(DefectID)"
+                    },
+                    {
+                      "expression": "`DefectType`",
+                      "name": "DefectType"
+                    }
+                  ]
+                }
+              }
+            ],
+            "spec": {
+              "encodings": {
+                "color": {
+                  "displayName": "Status",
+                  "fieldName": "Status",
+                  "scale": {
+                    "mappings": [
+                      {
+                        "color": "#3292A8",
+                        "value": "Pending"
+                      },
+                      {
+                        "color": "#99DDB4",
+                        "value": "Shipped"
+                      },
+                      {
+                        "color": "#246E8A",
+                        "value": "Delivered"
+                      },
+                      {
+                        "color": "#4CB5BB",
+                        "value": "Processing"
+                      }
+                    ],
+                    "type": "categorical"
+                  }
+                },
+                "x": {
+                  "displayName": "Count of Unique DefectID",
+                  "fieldName": "countdistinct(DefectID)",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "y": {
+                  "displayName": "DefectType",
+                  "fieldName": "DefectType",
+                  "scale": {
+                    "sort": {
+                      "by": "x-reversed"
+                    },
+                    "type": "categorical"
+                  }
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Defects by Type"
+              },
+              "mark": {
+                "colors": [
+                  "#8BCAE7",
+                  "#FF3621",
+                  "#8BCAE7",
+                  "#AB4057",
+                  "#99DDB4",
+                  "#FCA4A1",
+                  "#919191",
+                  "#BF7080"
+                ]
+              },
+              "version": 3,
+              "widgetType": "bar"
+            }
+          }
+        },
+        {
+          "position": {
+            "height": 12,
+            "width": 6,
+            "x": 0,
+            "y": 13
+          },
+          "widget": {
+            "name": "1de71b65",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "770a63a5",
+                  "disaggregated": true,
+                  "fields": [
+                    {
+                      "expression": "`ReportDate`",
+                      "name": "ReportDate"
+                    },
+                    {
+                      "expression": "`DefectType`",
+                      "name": "DefectType"
+                    },
+                    {
+                      "expression": "`Status`",
+                      "name": "Status"
+                    },
+                    {
+                      "expression": "`DeliveryDate`",
+                      "name": "DeliveryDate"
+                    },
+                    {
+                      "expression": "`customername`",
+                      "name": "customername"
+                    },
+                    {
+                      "expression": "`contactemail`",
+                      "name": "contactemail"
+                    },
+                    {
+                      "expression": "`industry`",
+                      "name": "industry"
+                    }
+                  ]
+                }
+              }
+            ],
+            "spec": {
+              "allowHTMLByDefault": false,
+              "condensed": true,
+              "encodings": {
+                "columns": [
+                  {
+                    "alignContent": "right",
+                    "allowHTML": false,
+                    "allowSearch": false,
+                    "booleanValues": [
+                      "false",
+                      "true"
+                    ],
+                    "cellFormat": {
+                      "default": {
+                        "foregroundColor": null
+                      },
+                      "rules": []
+                    },
+                    "dateTimeFormat": "MM/DD/YY",
+                    "displayAs": "datetime",
+                    "displayName": "ReportDate",
+                    "fieldName": "ReportDate",
+                    "highlightLinks": false,
+                    "imageHeight": "",
+                    "imageTitleTemplate": "{{ @ }}",
+                    "imageUrlTemplate": "{{ @ }}",
+                    "imageWidth": "",
+                    "linkOpenInNewTab": true,
+                    "linkTextTemplate": "{{ @ }}",
+                    "linkTitleTemplate": "{{ @ }}",
+                    "linkUrlTemplate": "{{ @ }}",
+                    "order": 2,
+                    "preserveWhitespace": false,
+                    "title": "Date",
+                    "type": "date",
+                    "useMonospaceFont": false,
+                    "visible": true
+                  },
+                  {
+                    "alignContent": "left",
+                    "allowHTML": false,
+                    "allowSearch": false,
+                    "booleanValues": [
+                      "false",
+                      "true"
+                    ],
+                    "displayAs": "string",
+                    "displayName": "DefectType",
+                    "fieldName": "DefectType",
+                    "highlightLinks": false,
+                    "imageHeight": "",
+                    "imageTitleTemplate": "{{ @ }}",
+                    "imageUrlTemplate": "{{ @ }}",
+                    "imageWidth": "",
+                    "linkOpenInNewTab": true,
+                    "linkTextTemplate": "{{ @ }}",
+                    "linkTitleTemplate": "{{ @ }}",
+                    "linkUrlTemplate": "{{ @ }}",
+                    "order": 3,
+                    "preserveWhitespace": false,
+                    "title": "DefectType",
+                    "type": "string",
+                    "useMonospaceFont": false,
+                    "visible": true
+                  },
+                  {
+                    "alignContent": "left",
+                    "allowHTML": false,
+                    "allowSearch": false,
+                    "booleanValues": [
+                      "false",
+                      "true"
+                    ],
+                    "displayAs": "string",
+                    "displayName": "Status",
+                    "fieldName": "Status",
+                    "highlightLinks": false,
+                    "imageHeight": "",
+                    "imageTitleTemplate": "{{ @ }}",
+                    "imageUrlTemplate": "{{ @ }}",
+                    "imageWidth": "",
+                    "linkOpenInNewTab": true,
+                    "linkTextTemplate": "{{ @ }}",
+                    "linkTitleTemplate": "{{ @ }}",
+                    "linkUrlTemplate": "{{ @ }}",
+                    "order": 5,
+                    "preserveWhitespace": false,
+                    "title": "Status",
+                    "type": "string",
+                    "useMonospaceFont": false,
+                    "visible": true
+                  },
+                  {
+                    "alignContent": "right",
+                    "allowHTML": false,
+                    "allowSearch": false,
+                    "booleanValues": [
+                      "false",
+                      "true"
+                    ],
+                    "dateTimeFormat": "DD/MM/YY",
+                    "displayAs": "datetime",
+                    "displayName": "DeliveryDate",
+                    "fieldName": "DeliveryDate",
+                    "highlightLinks": false,
+                    "imageHeight": "",
+                    "imageTitleTemplate": "{{ @ }}",
+                    "imageUrlTemplate": "{{ @ }}",
+                    "imageWidth": "",
+                    "linkOpenInNewTab": true,
+                    "linkTextTemplate": "{{ @ }}",
+                    "linkTitleTemplate": "{{ @ }}",
+                    "linkUrlTemplate": "{{ @ }}",
+                    "order": 12,
+                    "preserveWhitespace": false,
+                    "title": "DeliveryDate",
+                    "type": "date",
+                    "useMonospaceFont": false,
+                    "visible": true
+                  },
+                  {
+                    "alignContent": "left",
+                    "allowHTML": false,
+                    "allowSearch": false,
+                    "booleanValues": [
+                      "false",
+                      "true"
+                    ],
+                    "displayAs": "string",
+                    "displayName": "customername",
+                    "fieldName": "customername",
+                    "highlightLinks": false,
+                    "imageHeight": "",
+                    "imageTitleTemplate": "{{ @ }}",
+                    "imageUrlTemplate": "{{ @ }}",
+                    "imageWidth": "",
+                    "linkOpenInNewTab": true,
+                    "linkTextTemplate": "{{ @ }}",
+                    "linkTitleTemplate": "{{ @ }}",
+                    "linkUrlTemplate": "{{ @ }}",
+                    "order": 17,
+                    "preserveWhitespace": false,
+                    "title": "Customer",
+                    "type": "string",
+                    "useMonospaceFont": false,
+                    "visible": true
+                  },
+                  {
+                    "alignContent": "left",
+                    "allowHTML": false,
+                    "allowSearch": false,
+                    "booleanValues": [
+                      "false",
+                      "true"
+                    ],
+                    "displayAs": "string",
+                    "displayName": "contactemail",
+                    "fieldName": "contactemail",
+                    "highlightLinks": false,
+                    "imageHeight": "",
+                    "imageTitleTemplate": "{{ @ }}",
+                    "imageUrlTemplate": "{{ @ }}",
+                    "imageWidth": "",
+                    "linkOpenInNewTab": true,
+                    "linkTextTemplate": "{{ @ }}",
+                    "linkTitleTemplate": "{{ @ }}",
+                    "linkUrlTemplate": "{{ @ }}",
+                    "order": 18,
+                    "preserveWhitespace": false,
+                    "title": "Contact Email",
+                    "type": "string",
+                    "useMonospaceFont": false,
+                    "visible": true
+                  },
+                  {
+                    "alignContent": "left",
+                    "allowHTML": false,
+                    "allowSearch": false,
+                    "booleanValues": [
+                      "false",
+                      "true"
+                    ],
+                    "displayAs": "string",
+                    "displayName": "industry",
+                    "fieldName": "industry",
+                    "highlightLinks": false,
+                    "imageHeight": "",
+                    "imageTitleTemplate": "{{ @ }}",
+                    "imageUrlTemplate": "{{ @ }}",
+                    "imageWidth": "",
+                    "linkOpenInNewTab": true,
+                    "linkTextTemplate": "{{ @ }}",
+                    "linkTitleTemplate": "{{ @ }}",
+                    "linkUrlTemplate": "{{ @ }}",
+                    "order": 19,
+                    "preserveWhitespace": false,
+                    "title": "Industry",
+                    "type": "string",
+                    "useMonospaceFont": false,
+                    "visible": true
+                  }
+                ]
+              },
+              "invisibleColumns": [
+                {
+                  "alignContent": "right",
+                  "allowHTML": false,
+                  "allowSearch": false,
+                  "booleanValues": [
+                    "false",
+                    "true"
+                  ],
+                  "displayAs": "number",
+                  "highlightLinks": false,
+                  "imageHeight": "",
+                  "imageTitleTemplate": "{{ @ }}",
+                  "imageUrlTemplate": "{{ @ }}",
+                  "imageWidth": "",
+                  "linkOpenInNewTab": true,
+                  "linkTextTemplate": "{{ @ }}",
+                  "linkTitleTemplate": "{{ @ }}",
+                  "linkUrlTemplate": "{{ @ }}",
+                  "name": "DefectID",
+                  "numberFormat": "0",
+                  "order": 0,
+                  "preserveWhitespace": false,
+                  "title": "DefectID",
+                  "type": "integer",
+                  "useMonospaceFont": false
+                },
+                {
+                  "alignContent": "right",
+                  "allowHTML": false,
+                  "allowSearch": false,
+                  "booleanValues": [
+                    "false",
+                    "true"
+                  ],
+                  "displayAs": "number",
+                  "highlightLinks": false,
+                  "imageHeight": "",
+                  "imageTitleTemplate": "{{ @ }}",
+                  "imageUrlTemplate": "{{ @ }}",
+                  "imageWidth": "",
+                  "linkOpenInNewTab": true,
+                  "linkTextTemplate": "{{ @ }}",
+                  "linkTitleTemplate": "{{ @ }}",
+                  "linkUrlTemplate": "{{ @ }}",
+                  "name": "OrderDetailID",
+                  "numberFormat": "0",
+                  "order": 1,
+                  "preserveWhitespace": false,
+                  "title": "OrderDetailID",
+                  "type": "integer",
+                  "useMonospaceFont": false
+                },
+                {
+                  "alignContent": "left",
+                  "allowHTML": false,
+                  "allowSearch": false,
+                  "booleanValues": [
+                    "false",
+                    "true"
+                  ],
+                  "displayAs": "string",
+                  "highlightLinks": false,
+                  "imageHeight": "",
+                  "imageTitleTemplate": "{{ @ }}",
+                  "imageUrlTemplate": "{{ @ }}",
+                  "imageWidth": "",
+                  "linkOpenInNewTab": true,
+                  "linkTextTemplate": "{{ @ }}",
+                  "linkTitleTemplate": "{{ @ }}",
+                  "linkUrlTemplate": "{{ @ }}",
+                  "name": "Description",
+                  "order": 4,
+                  "preserveWhitespace": false,
+                  "title": "Description",
+                  "type": "string",
+                  "useMonospaceFont": false
+                },
+                {
+                  "alignContent": "right",
+                  "allowHTML": false,
+                  "allowSearch": false,
+                  "booleanValues": [
+                    "false",
+                    "true"
+                  ],
+                  "displayAs": "number",
+                  "highlightLinks": false,
+                  "imageHeight": "",
+                  "imageTitleTemplate": "{{ @ }}",
+                  "imageUrlTemplate": "{{ @ }}",
+                  "imageWidth": "",
+                  "linkOpenInNewTab": true,
+                  "linkTextTemplate": "{{ @ }}",
+                  "linkTitleTemplate": "{{ @ }}",
+                  "linkUrlTemplate": "{{ @ }}",
+                  "name": "OrderID",
+                  "numberFormat": "0",
+                  "order": 6,
+                  "preserveWhitespace": false,
+                  "title": "OrderID",
+                  "type": "integer",
+                  "useMonospaceFont": false
+                },
+                {
+                  "alignContent": "right",
+                  "allowHTML": false,
+                  "allowSearch": false,
+                  "booleanValues": [
+                    "false",
+                    "true"
+                  ],
+                  "displayAs": "number",
+                  "highlightLinks": false,
+                  "imageHeight": "",
+                  "imageTitleTemplate": "{{ @ }}",
+                  "imageUrlTemplate": "{{ @ }}",
+                  "imageWidth": "",
+                  "linkOpenInNewTab": true,
+                  "linkTextTemplate": "{{ @ }}",
+                  "linkTitleTemplate": "{{ @ }}",
+                  "linkUrlTemplate": "{{ @ }}",
+                  "name": "ProductID",
+                  "numberFormat": "0",
+                  "order": 7,
+                  "preserveWhitespace": false,
+                  "title": "ProductID",
+                  "type": "integer",
+                  "useMonospaceFont": false
+                },
+                {
+                  "alignContent": "right",
+                  "allowHTML": false,
+                  "allowSearch": false,
+                  "booleanValues": [
+                    "false",
+                    "true"
+                  ],
+                  "displayAs": "number",
+                  "highlightLinks": false,
+                  "imageHeight": "",
+                  "imageTitleTemplate": "{{ @ }}",
+                  "imageUrlTemplate": "{{ @ }}",
+                  "imageWidth": "",
+                  "linkOpenInNewTab": true,
+                  "linkTextTemplate": "{{ @ }}",
+                  "linkTitleTemplate": "{{ @ }}",
+                  "linkUrlTemplate": "{{ @ }}",
+                  "name": "SupplierID",
+                  "numberFormat": "0",
+                  "order": 8,
+                  "preserveWhitespace": false,
+                  "title": "SupplierID",
+                  "type": "integer",
+                  "useMonospaceFont": false
+                },
+                {
+                  "alignContent": "right",
+                  "allowHTML": false,
+                  "allowSearch": false,
+                  "booleanValues": [
+                    "false",
+                    "true"
+                  ],
+                  "displayAs": "number",
+                  "highlightLinks": false,
+                  "imageHeight": "",
+                  "imageTitleTemplate": "{{ @ }}",
+                  "imageUrlTemplate": "{{ @ }}",
+                  "imageWidth": "",
+                  "linkOpenInNewTab": true,
+                  "linkTextTemplate": "{{ @ }}",
+                  "linkTitleTemplate": "{{ @ }}",
+                  "linkUrlTemplate": "{{ @ }}",
+                  "name": "Quantity",
+                  "numberFormat": "0",
+                  "order": 9,
+                  "preserveWhitespace": false,
+                  "title": "Quantity",
+                  "type": "integer",
+                  "useMonospaceFont": false
+                },
+                {
+                  "alignContent": "right",
+                  "allowHTML": false,
+                  "allowSearch": false,
+                  "booleanValues": [
+                    "false",
+                    "true"
+                  ],
+                  "displayAs": "number",
+                  "highlightLinks": false,
+                  "imageHeight": "",
+                  "imageTitleTemplate": "{{ @ }}",
+                  "imageUrlTemplate": "{{ @ }}",
+                  "imageWidth": "",
+                  "linkOpenInNewTab": true,
+                  "linkTextTemplate": "{{ @ }}",
+                  "linkTitleTemplate": "{{ @ }}",
+                  "linkUrlTemplate": "{{ @ }}",
+                  "name": "UnitPrice",
+                  "order": 10,
+                  "preserveWhitespace": false,
+                  "title": "UnitPrice",
+                  "type": "decimal",
+                  "useMonospaceFont": false
+                },
+                {
+                  "alignContent": "right",
+                  "allowHTML": false,
+                  "allowSearch": false,
+                  "booleanValues": [
+                    "false",
+                    "true"
+                  ],
+                  "dateTimeFormat": "DD/MM/YY",
+                  "displayAs": "datetime",
+                  "highlightLinks": false,
+                  "imageHeight": "",
+                  "imageTitleTemplate": "{{ @ }}",
+                  "imageUrlTemplate": "{{ @ }}",
+                  "imageWidth": "",
+                  "linkOpenInNewTab": true,
+                  "linkTextTemplate": "{{ @ }}",
+                  "linkTitleTemplate": "{{ @ }}",
+                  "linkUrlTemplate": "{{ @ }}",
+                  "name": "ShipDate",
+                  "order": 11,
+                  "preserveWhitespace": false,
+                  "title": "ShipDate",
+                  "type": "date",
+                  "useMonospaceFont": false
+                },
+                {
+                  "alignContent": "right",
+                  "allowHTML": false,
+                  "allowSearch": false,
+                  "booleanValues": [
+                    "false",
+                    "true"
+                  ],
+                  "displayAs": "number",
+                  "highlightLinks": false,
+                  "imageHeight": "",
+                  "imageTitleTemplate": "{{ @ }}",
+                  "imageUrlTemplate": "{{ @ }}",
+                  "imageWidth": "",
+                  "linkOpenInNewTab": true,
+                  "linkTextTemplate": "{{ @ }}",
+                  "linkTitleTemplate": "{{ @ }}",
+                  "linkUrlTemplate": "{{ @ }}",
+                  "name": "CustomerID",
+                  "numberFormat": "0",
+                  "order": 13,
+                  "preserveWhitespace": false,
+                  "title": "CustomerID",
+                  "type": "integer",
+                  "useMonospaceFont": false
+                },
+                {
+                  "alignContent": "right",
+                  "allowHTML": false,
+                  "allowSearch": false,
+                  "booleanValues": [
+                    "false",
+                    "true"
+                  ],
+                  "dateTimeFormat": "DD/MM/YY",
+                  "displayAs": "datetime",
+                  "highlightLinks": false,
+                  "imageHeight": "",
+                  "imageTitleTemplate": "{{ @ }}",
+                  "imageUrlTemplate": "{{ @ }}",
+                  "imageWidth": "",
+                  "linkOpenInNewTab": true,
+                  "linkTextTemplate": "{{ @ }}",
+                  "linkTitleTemplate": "{{ @ }}",
+                  "linkUrlTemplate": "{{ @ }}",
+                  "name": "OrderDate",
+                  "order": 14,
+                  "preserveWhitespace": false,
+                  "title": "OrderDate",
+                  "type": "date",
+                  "useMonospaceFont": false
+                },
+                {
+                  "alignContent": "right",
+                  "allowHTML": false,
+                  "allowSearch": false,
+                  "booleanValues": [
+                    "false",
+                    "true"
+                  ],
+                  "displayAs": "number",
+                  "highlightLinks": false,
+                  "imageHeight": "",
+                  "imageTitleTemplate": "{{ @ }}",
+                  "imageUrlTemplate": "{{ @ }}",
+                  "imageWidth": "",
+                  "linkOpenInNewTab": true,
+                  "linkTextTemplate": "{{ @ }}",
+                  "linkTitleTemplate": "{{ @ }}",
+                  "linkUrlTemplate": "{{ @ }}",
+                  "name": "TotalAmount",
+                  "order": 15,
+                  "preserveWhitespace": false,
+                  "title": "TotalAmount",
+                  "type": "decimal",
+                  "useMonospaceFont": false
+                },
+                {
+                  "alignContent": "right",
+                  "allowHTML": false,
+                  "allowSearch": false,
+                  "booleanValues": [
+                    "false",
+                    "true"
+                  ],
+                  "displayAs": "number",
+                  "highlightLinks": false,
+                  "imageHeight": "",
+                  "imageTitleTemplate": "{{ @ }}",
+                  "imageUrlTemplate": "{{ @ }}",
+                  "imageWidth": "",
+                  "linkOpenInNewTab": true,
+                  "linkTextTemplate": "{{ @ }}",
+                  "linkTitleTemplate": "{{ @ }}",
+                  "linkUrlTemplate": "{{ @ }}",
+                  "name": "customerid",
+                  "numberFormat": "0",
+                  "order": 16,
+                  "preserveWhitespace": false,
+                  "title": "customerid",
+                  "type": "integer",
+                  "useMonospaceFont": false
+                },
+                {
+                  "alignContent": "left",
+                  "allowHTML": false,
+                  "allowSearch": false,
+                  "booleanValues": [
+                    "false",
+                    "true"
+                  ],
+                  "displayAs": "string",
+                  "highlightLinks": false,
+                  "imageHeight": "",
+                  "imageTitleTemplate": "{{ @ }}",
+                  "imageUrlTemplate": "{{ @ }}",
+                  "imageWidth": "",
+                  "linkOpenInNewTab": true,
+                  "linkTextTemplate": "{{ @ }}",
+                  "linkTitleTemplate": "{{ @ }}",
+                  "linkUrlTemplate": "{{ @ }}",
+                  "name": "company",
+                  "order": 20,
+                  "preserveWhitespace": false,
+                  "title": "Company",
+                  "type": "string",
+                  "useMonospaceFont": false
+                }
+              ],
+              "itemsPerPage": 25,
+              "paginationSize": "default",
+              "version": 1,
+              "widgetType": "table",
+              "withRowNumber": false
+            }
+          }
+        },
+        {
+          "position": {
+            "height": 1,
+            "width": 2,
+            "x": 0,
+            "y": 0
+          },
+          "widget": {
+            "multilineTextboxSpec": {
+              "lines": [
+                "## Defects Tracking"
+              ]
+            },
+            "name": "c2e72e31"
+          }
+        },
+        {
+          "position": {
+            "height": 2,
+            "width": 1,
+            "x": 5,
+            "y": 1
+          },
+          "widget": {
+            "name": "6a7540a1",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "770a63a5",
+                  "disaggregated": false,
+                  "fields": [
+                    {
+                      "expression": "SUM(`TotalAmount`)",
+                      "name": "sum(TotalAmount)"
+                    }
+                  ]
+                }
+              }
+            ],
+            "spec": {
+              "encodings": {
+                "value": {
+                  "displayName": "Sum of TotalAmount",
+                  "fieldName": "sum(TotalAmount)",
+                  "format": {
+                    "abbreviation": "compact",
+                    "currencyCode": "USD",
+                    "decimalPlaces": {
+                      "places": 2,
+                      "type": "max"
+                    },
+                    "type": "number-currency"
+                  }
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Total Sales"
+              },
+              "version": 2,
+              "widgetType": "counter"
+            }
+          }
+        },
+        {
+          "position": {
+            "height": 2,
+            "width": 1,
+            "x": 5,
+            "y": 3
+          },
+          "widget": {
+            "name": "588011a2",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "770a63a5",
+                  "disaggregated": false,
+                  "fields": [
+                    {
+                      "expression": "COUNT(`OrderID`)",
+                      "name": "count(OrderID)"
+                    }
+                  ]
+                }
+              }
+            ],
+            "spec": {
+              "encodings": {
+                "value": {
+                  "displayName": "Count of OrderID",
+                  "fieldName": "count(OrderID)"
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Total Orders"
+              },
+              "version": 2,
+              "widgetType": "counter"
+            }
+          }
+        },
+        {
+          "position": {
+            "height": 2,
+            "width": 1,
+            "x": 5,
+            "y": 5
+          },
+          "widget": {
+            "name": "c7dfcc2d",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "770a63a5",
+                  "disaggregated": false,
+                  "fields": [
+                    {
+                      "expression": "COUNT(DISTINCT `DefectID`)",
+                      "name": "countdistinct(DefectID)"
+                    }
+                  ]
+                }
+              }
+            ],
+            "spec": {
+              "encodings": {
+                "value": {
+                  "displayName": "Count of Unique DefectID",
+                  "fieldName": "countdistinct(DefectID)"
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Total Defects"
+              },
+              "version": 2,
+              "widgetType": "counter"
+            }
+          }
+        },
+        {
+          "position": {
+            "height": 6,
+            "width": 1,
+            "x": 0,
+            "y": 7
+          },
+          "widget": {
+            "name": "59b462b6",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "770a63a5",
+                  "disaggregated": false,
+                  "fields": [
+                    {
+                      "expression": "`SupplierID`",
+                      "name": "SupplierID"
+                    },
+                    {
+                      "expression": "MIN(`DefectID`)",
+                      "name": "min(DefectID)"
+                    },
+                    {
+                      "expression": "PERCENTILE(`DefectID`, 0.25)",
+                      "name": "q1(DefectID)"
+                    },
+                    {
+                      "expression": "MEDIAN(`DefectID`)",
+                      "name": "median(DefectID)"
+                    },
+                    {
+                      "expression": "PERCENTILE(`DefectID`, 0.75)",
+                      "name": "q3(DefectID)"
+                    },
+                    {
+                      "expression": "MAX(`DefectID`)",
+                      "name": "max(DefectID)"
+                    }
+                  ]
+                }
+              }
+            ],
+            "spec": {
+              "encodings": {
+                "x": {
+                  "displayName": "SupplierID",
+                  "fieldName": "SupplierID",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "boxEnd": {
+                    "displayName": "Third Quartile of DefectID",
+                    "fieldName": "q3(DefectID)"
+                  },
+                  "boxMid": {
+                    "displayName": "Median of DefectID",
+                    "fieldName": "median(DefectID)"
+                  },
+                  "boxStart": {
+                    "displayName": "First Quartile of DefectID",
+                    "fieldName": "q1(DefectID)"
+                  },
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "whiskerEnd": {
+                    "displayName": "Maximum DefectID",
+                    "fieldName": "max(DefectID)"
+                  },
+                  "whiskerStart": {
+                    "displayName": "Minimum DefectID",
+                    "fieldName": "min(DefectID)"
+                  }
+                }
+              },
+              "version": 3,
+              "widgetType": "box"
+            }
+          }
+        },
+        {
+          "position": {
+            "height": 6,
+            "width": 2,
+            "x": 4,
+            "y": 7
+          },
+          "widget": {
+            "name": "35b499ed",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "770a63a5",
+                  "disaggregated": false,
+                  "fields": [
+                    {
+                      "expression": "COUNT(DISTINCT `DefectID`)",
+                      "name": "countdistinct(DefectID)"
+                    },
+                    {
+                      "expression": "`DefectType`",
+                      "name": "DefectType"
+                    },
+                    {
+                      "expression": "`industry`",
+                      "name": "industry"
+                    }
+                  ]
+                }
+              }
+            ],
+            "spec": {
+              "encodings": {
+                "color": {
+                  "displayName": "Defects",
+                  "fieldName": "countdistinct(DefectID)",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "label": {
+                  "show": false
+                },
+                "x": {
+                  "axis": {
+                    "labelAngle": 0
+                  },
+                  "displayName": "DefectType",
+                  "fieldName": "DefectType",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "axis": {
+                    "hideLabels": false
+                  },
+                  "displayName": "industry",
+                  "fieldName": "industry",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              },
+              "version": 3,
+              "widgetType": "heatmap"
+            }
+          }
+        }
+      ],
+      "name": "f76c711e",
+      "pageType": "PAGE_TYPE_CANVAS"
+    },
+    {
+      "displayName": "Overview",
+      "layout": [
+        {
+          "position": {
+            "height": 6,
+            "width": 3,
+            "x": 0,
+            "y": 0
+          },
+          "widget": {
+            "name": "ef59bd5d",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "770a63a5",
+                  "disaggregated": false,
+                  "fields": [
+                    {
+                      "expression": "`DefectType`",
+                      "name": "DefectType"
+                    },
+                    {
+                      "expression": "COUNT(`DefectID`)",
+                      "name": "count(DefectID)"
+                    }
+                  ]
+                }
+              }
+            ],
+            "spec": {
+              "encodings": {
+                "x": {
+                  "displayName": "DefectType",
+                  "fieldName": "DefectType",
+                  "scale": {
+                    "sort": {
+                      "by": "y-reversed"
+                    },
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "displayName": "Count of DefectID",
+                  "fieldName": "count(DefectID)",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Defects by Type"
+              },
+              "version": 3,
+              "widgetType": "bar"
+            }
+          }
+        }
+      ],
+      "name": "eab0dd32",
+      "pageType": "PAGE_TYPE_CANVAS"
+    }
+  ],
+  "uiSettings": {
+    "theme": {
+      "widgetHeaderAlignment": "ALIGNMENT_UNSPECIFIED"
+    }
+  }
+}
