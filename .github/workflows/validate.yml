@@ -1,9 +1,11 @@
 name: Validate Bundle
 
 on:
-  pull_request:
+  push:
     branches:
       - dev
+  pull_request:
+    branches:
       - staging
       - prod
 
