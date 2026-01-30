@@ -133,7 +133,14 @@ Configure these secrets in your GitHub repository (Settings → Secrets → Acti
 | Secret | Description |
 |--------|-------------|
 | `DATABRICKS_HOST` | Workspace URL (e.g., `https://your-workspace.cloud.databricks.com`) |
-| `DATABRICKS_TOKEN` | Personal access token or service principal token |
+| `DATABRICKS_CLIENT_ID` | Service principal's Application (client) ID |
+| `DATABRICKS_CLIENT_SECRET` | Service principal's OAuth secret |
+
+### Setting up a Service Principal
+
+1. In Databricks: Admin Console → Service Principals → Add
+2. Generate an OAuth secret for the service principal
+3. Grant the service principal permissions to deploy and manage dashboards
 
 ## Useful Commands
 
