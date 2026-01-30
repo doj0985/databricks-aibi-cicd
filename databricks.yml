@@ -6,19 +6,44 @@ bundle:
 include:
   - resources/*.yml
 
+variables:
+  warehouse_id:
+    description: SQL warehouse ID to use for the dashboard
+
 targets:
   dev:
-    # The default target uses 'mode: development' to create a development copy.
-    # - Deployed resources get prefixed with '[dev my_user_name]'
-    # - Any job schedules and triggers are paused by default.
-    # See also https://docs.databricks.com/dev-tools/bundles/deployment-modes.html.
-    mode: development
+    # Local target for validation and generate commands. Not used for deployment.
     default: true
+    variables:
+      warehouse_id: 27a3fd0190890b59
     workspace:
       host: https://fe-vm-aibi-embedded-analytics.cloud.databricks.com
 
+  staging:
+    mode: production
+    variables:
+      warehouse_id: 27a3fd0190890b59  # TODO: replace with actual staging warehouse ID
+    presets:
+      name_prefix: 'staging_'
+      tags:
+        staging: 'true'
+    workspace:
+      host: https://fe-vm-aibi-embedded-analytics.cloud.databricks.com
+      root_path: /Workspace/Users/doyoung.jung@databricks.com/.bundle/${bundle.name}/${bundle.target}
+    permissions:
+      - user_name: doyoung.jung@databricks.com
+        level: CAN_MANAGE
+    run_as:
+      user_name: doyoung.jung@databricks.com
+
   prod:
     mode: production
+    variables:
+      warehouse_id: 27a3fd0190890b59
+    presets:
+      name_prefix: 'production_'
+      tags:
+        prod: 'true'
     workspace:
       host: https://fe-vm-aibi-embedded-analytics.cloud.databricks.com
       # We explicitly specify /Workspace/Users/doyoung.jung@databricks.com to make sure we only have a single copy.
