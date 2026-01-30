@@ -19,6 +19,15 @@ jobs:
       - name: Install Databricks CLI
         uses: databricks/setup-cli@main
 
+      - name: Check for hardcoded warehouse_id
+        run: |
+          if grep -E "warehouse_id: [a-f0-9]{16}" resources/*.dashboard.yml 2>/dev/null; then
+            echo "ERROR: Found hardcoded warehouse_id in dashboard resource files."
+            echo "Please replace with \${var.warehouse_id} or another warehouse variable."
+            exit 1
+          fi
+          echo "No hardcoded warehouse_id found."
+
       - name: Validate bundle
         env:
           DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}

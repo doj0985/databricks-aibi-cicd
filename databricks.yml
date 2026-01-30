@@ -22,14 +22,14 @@ targets:
   staging:
     mode: production
     variables:
-      warehouse_id: 27a3fd0190890b59  # TODO: replace with actual staging warehouse ID
+      warehouse_id: 27a3fd0190890b59
     presets:
       name_prefix: 'staging_'
       tags:
-        staging: 'true'
+        env: staging
     workspace:
       host: https://fe-vm-aibi-embedded-analytics.cloud.databricks.com
-      root_path: /Workspace/Users/doyoung.jung@databricks.com/.bundle/${bundle.name}/${bundle.target}
+      root_path: /Workspace/Shared/.bundle/${bundle.name}/${bundle.target}
     permissions:
       - user_name: doyoung.jung@databricks.com
         level: CAN_MANAGE
@@ -43,11 +43,10 @@ targets:
     presets:
       name_prefix: 'production_'
       tags:
-        prod: 'true'
+        env: prod
     workspace:
       host: https://fe-vm-aibi-embedded-analytics.cloud.databricks.com
-      # We explicitly specify /Workspace/Users/doyoung.jung@databricks.com to make sure we only have a single copy.
-      root_path: /Workspace/Users/doyoung.jung@databricks.com/.bundle/${bundle.name}/${bundle.target}
+      root_path: /Workspace/Shared/.bundle/${bundle.name}/${bundle.target}
     permissions:
       - user_name: doyoung.jung@databricks.com
         level: CAN_MANAGE
