@@ -9,6 +9,7 @@ jobs:
   deploy:
     name: Deploy to Production Workspace
     runs-on: ubuntu-latest
+    environment: production  # Requires approval before running
 
     steps:
       - name: Checkout code

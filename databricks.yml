@@ -31,12 +31,12 @@ targets:
       host: https://fe-vm-aibi-embedded-analytics.cloud.databricks.com
       root_path: /Workspace/Shared/.bundle/${bundle.name}/${bundle.target}
     permissions:
-      - service_principal_name: github_actions_aibi_cicd
+      - service_principal_name: 98e53e4a-a40f-4859-a9f9-2be80c43e222  # github_actions_aibi_cicd (app ID, not display name)
         level: CAN_MANAGE
       - user_name: doyoung.jung@databricks.com
-        level: CAN_MANAGE
+        level: CAN_RUN
     run_as:
-      service_principal_name: github_actions_aibi_cicd
+      service_principal_name: 98e53e4a-a40f-4859-a9f9-2be80c43e222  # github_actions_aibi_cicd (app ID, not display name)
 
   prod:
     mode: production
@@ -50,9 +50,9 @@ targets:
       host: https://fe-vm-aibi-embedded-analytics.cloud.databricks.com
       root_path: /Workspace/Shared/.bundle/${bundle.name}/${bundle.target}
     permissions:
-      - service_principal_name: github_actions_aibi_cicd
+      - service_principal_name: 98e53e4a-a40f-4859-a9f9-2be80c43e222  # github_actions_aibi_cicd (app ID, not display name)
         level: CAN_MANAGE
       - user_name: doyoung.jung@databricks.com
-        level: CAN_MANAGE
+        level: CAN_RUN
     run_as:
-      service_principal_name: github_actions_aibi_cicd
+      service_principal_name: 98e53e4a-a40f-4859-a9f9-2be80c43e222  # github_actions_aibi_cicd (app ID, not display name)
