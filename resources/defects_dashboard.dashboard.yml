@@ -1,6 +1,0 @@
-resources:
-  dashboards:
-    defects_dashboard:
-      display_name: "Defects Dashboard"
-      warehouse_id: 27a3fd0190890b59
-      file_path: ../src/defects_dashboard.lvdash.json

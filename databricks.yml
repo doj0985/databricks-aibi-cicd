@@ -1,30 +1,60 @@
 # This is a Databricks asset bundle definition for biops.
 # See https://docs.databricks.com/dev-tools/bundles/index.html for documentation.
+#
+# NOTE: This config currently points all targets at a Databricks Free Edition
+# workspace (no IP access lists) so the full dev -> staging -> prod promotion can
+# be exercised end-to-end from GitHub Actions runners. Swap the host/warehouse/SP
+# back to the real workspaces for production use.
 bundle:
   name: biops
 
 include:
   - resources/*.yml
 
+variables:
+  warehouse_id:
+    description: SQL warehouse ID to use for the dashboard
+  service_principal_id:
+    description: Application (client) ID of the CI/CD service principal used to deploy
+    default: cd69a690-2381-46ad-811e-cbf80f5406ae  # biops-cicd-test (Free Edition)
+
 targets:
   dev:
-    # The default target uses 'mode: development' to create a development copy.
-    # - Deployed resources get prefixed with '[dev my_user_name]'
-    # - Any job schedules and triggers are paused by default.
-    # See also https://docs.databricks.com/dev-tools/bundles/deployment-modes.html.
-    mode: development
+    # Local target for validation and generate commands. Not used for deployment.
     default: true
+    variables:
+      warehouse_id: 38d92bfbd6fca9c0
     workspace:
-      host: https://fe-vm-aibi-embedded-analytics.cloud.databricks.com
+      host: https://dbc-962d4f8a-27db.cloud.databricks.com
+
+  staging:
+    mode: production
+    variables:
+      warehouse_id: 38d92bfbd6fca9c0
+    presets:
+      name_prefix: 'staging_'
+      tags:
+        env: staging
+    workspace:
+      host: https://dbc-962d4f8a-27db.cloud.databricks.com
+    permissions:
+      - service_principal_name: ${var.service_principal_id}
+        level: CAN_MANAGE
+    run_as:
+      service_principal_name: ${var.service_principal_id}
 
   prod:
     mode: production
+    variables:
+      warehouse_id: 38d92bfbd6fca9c0
+    presets:
+      name_prefix: 'production_'
+      tags:
+        env: prod
     workspace:
-      host: https://fe-vm-aibi-embedded-analytics.cloud.databricks.com
-      # We explicitly specify /Workspace/Users/doyoung.jung@databricks.com to make sure we only have a single copy.
-      root_path: /Workspace/Users/doyoung.jung@databricks.com/.bundle/${bundle.name}/${bundle.target}
+      host: https://dbc-962d4f8a-27db.cloud.databricks.com
     permissions:
-      - user_name: doyoung.jung@databricks.com
+      - service_principal_name: ${var.service_principal_id}
         level: CAN_MANAGE
     run_as:
-      user_name: doyoung.jung@databricks.com
+      service_principal_name: ${var.service_principal_id}
