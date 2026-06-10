@@ -1,6 +1,6 @@
 resources:
   dashboards:
     nyc_taxi_trip_analysis:
-      display_name: "NYC Taxi Trip Analysis (v2)"
+      display_name: "NYC Taxi Trip Analysis"
       warehouse_id: ${var.warehouse_id}
       file_path: ../src/nyc_taxi_trip_analysis.lvdash.json
