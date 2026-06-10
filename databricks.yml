@@ -1,10 +1,9 @@
 # This is a Databricks asset bundle definition for biops.
 # See https://docs.databricks.com/dev-tools/bundles/index.html for documentation.
 #
-# NOTE: This config currently points all targets at a Databricks Free Edition
-# workspace (no IP access lists) so the full dev -> staging -> prod promotion can
-# be exercised end-to-end from GitHub Actions runners. Swap the host/warehouse/SP
-# back to the real workspaces for production use.
+# All targets deploy to a Databricks Free Edition workspace. staging and prod
+# deploy via a service principal (run_as) using OAuth M2M from GitHub Actions.
+# For a multi-workspace setup, give staging/prod their own host + warehouse_id.
 bundle:
   name: biops
 
