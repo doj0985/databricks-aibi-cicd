@@ -1,0 +1,53 @@
+name: Validate Bundle
+
+on:
+  push:
+    branches:
+      - dev
+  pull_request:
+    branches:
+      - staging
+      - prod
+
+jobs:
+  validate:
+    name: Validate Databricks Bundle
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Install Databricks CLI
+        uses: databricks/setup-cli@main
+
+      - name: Check for hardcoded warehouse_id
+        run: |
+          if grep -E "warehouse_id: [a-f0-9]{16}" resources/*.dashboard.yml 2>/dev/null; then
+            echo "ERROR: Found hardcoded warehouse_id in dashboard resource files."
+            echo "Please replace with \${var.warehouse_id} or another warehouse variable."
+            exit 1
+          fi
+          echo "No hardcoded warehouse_id found."
+
+      - name: Determine target
+        id: target
+        run: |
+          # PRs into staging/prod validate that target; pushes to dev validate dev.
+          if [ "${{ github.base_ref }}" = "prod" ]; then
+            TARGET=prod
+          elif [ "${{ github.base_ref }}" = "staging" ]; then
+            TARGET=staging
+          else
+            TARGET=dev
+          fi
+          echo "target=$TARGET" >> "$GITHUB_OUTPUT"
+          echo "Validating bundle against target: $TARGET"
+
+      - name: Validate bundle
+        env:
+          DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST_FREE }}
+          DATABRICKS_CLIENT_ID: ${{ secrets.DATABRICKS_CLIENT_ID_FREE }}
+          DATABRICKS_CLIENT_SECRET: ${{ secrets.DATABRICKS_CLIENT_SECRET_FREE }}
+        run: |
+          databricks bundle validate --target ${{ steps.target.outputs.target }}
