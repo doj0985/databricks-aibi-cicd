@@ -1,159 +1,175 @@
 # biops
 
-CI/CD framework for Databricks AI BI dashboards using Databricks Asset Bundles.
+CI/CD framework for Databricks AI/BI dashboards using Databricks Asset Bundles.
+
+Dashboards are authored visually in the Databricks UI, pulled down as code, and
+promoted through environments via a GitOps branch flow. Validation runs on every
+PR; staging deploys automatically; production deploys via a service principal
+behind a manual approval gate.
 
 ## Overview
-
-This project manages dashboard deployments across environments using a GitOps workflow:
 
 ```
 dev (branch) → staging (branch) → prod (branch)
      ↓              ↓                 ↓
   Validate      Deploy to         Deploy to
-   only         Staging           Production
+   only          Staging          Production
+                                 (SP + approval)
 ```
+
+This repo is wired to a **Databricks Free Edition** workspace, which is reachable
+from GitHub-hosted runners (no IP access lists). For a real multi-workspace setup,
+give `staging` and `prod` their own `host` and `warehouse_id` in `databricks.yml`.
 
 ## Prerequisites
 
 1. Install the Databricks CLI: https://docs.databricks.com/dev-tools/cli/databricks-cli.html
-
-2. Authenticate to your Databricks workspace:
-   ```bash
-   databricks configure
-   ```
+2. A Databricks workspace the GitHub runner can reach (see [Networking](#networking)).
+3. A service principal in that workspace with an OAuth secret (see [Service principal](#setting-up-a-service-principal)).
 
 ## Workflow
 
 ### 1. Make changes in the Databricks UI
 
-Edit your dashboard in the dev workspace using the Databricks UI.
+Edit your dashboard in the dev workspace.
 
 ### 2. Pull changes locally
 
 ```bash
-databricks bundle generate dashboard --existing-id <dashboard-id>
+databricks bundle generate dashboard --existing-id <dashboard-id> --bind
 ```
 
-This generates:
-- `resources/<dashboard-name>.dashboard.yml` — resource configuration
-- `src/<dashboard-name>.lvdash.json` — dashboard definition
+This generates `resources/<name>.dashboard.yml` and `src/<name>.lvdash.json`. The
+`--bind` flag links the local resource to the existing dashboard so future deploys
+update it in place instead of creating a copy.
 
-### 3. Update warehouse_id (Important!)
+### 3. Replace the hardcoded warehouse_id
 
-The generated resource file will have a hardcoded `warehouse_id`. You must replace it with a variable:
+The generated resource file hardcodes a `warehouse_id`. Replace it with a variable:
 
 ```yaml
-# Before (generated)
-warehouse_id: 27a3fd0190890b59
-
-# After (correct)
-warehouse_id: ${var.warehouse_id}
+warehouse_id: ${var.warehouse_id}   # not 27a3fd0190890b59
 ```
 
-> **Note:** The CI validation will fail if hardcoded warehouse_ids are detected.
+> CI fails the build if a hardcoded `warehouse_id` is found in `resources/*.dashboard.yml`.
 
-### 4. Commit and push to dev branch
+### 4. Commit and push to dev
 
 ```bash
-git add .
-git commit -m "Update dashboard"
-git push origin dev
+git add . && git commit -m "Update dashboard" && git push origin dev
 ```
 
-### 5. Create PR to staging
+Pushing to `dev` runs `validate` against the `dev` target.
 
-- Create a PR from `dev` → `staging`
-- CI runs validation checks
-- After merge, the dashboard deploys to staging automatically
+### 5. Promote to staging
 
-### 6. UAT in staging
+- Open a PR `dev → staging`. CI validates the **staging** target.
+- Merge (requires approval). The dashboard auto-deploys to staging.
 
-Test the dashboard in the staging environment.
+### 6. UAT in staging, then promote to prod
 
-### 7. Create PR to prod
-
-- Create a PR from `staging` → `prod`
-- After merge, the dashboard deploys to production automatically
+- Open a PR `staging → prod`. CI validates the **prod** target.
+- Merge (requires approval). The prod deploy **pauses for approval** (the
+  `production` environment gate), then deploys via the service principal.
 
 ## Project Structure
 
 ```
 biops/
 ├── .github/workflows/
-│   ├── validate.yml        # Runs on PRs (validates bundle)
-│   ├── deploy-staging.yml  # Runs on push to staging
-│   └── deploy-prod.yml     # Runs on push to prod
-├── databricks.yml          # Bundle configuration with targets
-├── resources/              # Dashboard resource definitions
-│   └── *.dashboard.yml
-└── src/                    # Dashboard JSON files
-    └── *.lvdash.json
+│   ├── validate.yml        # PRs into staging/prod + push to dev (target-aware)
+│   ├── deploy-staging.yml  # Push to staging
+│   └── deploy-prod.yml     # Push to prod (behind approval gate)
+├── databricks.yml          # Bundle config with dev/staging/prod targets
+├── resources/              # Dashboard resource definitions (*.dashboard.yml)
+└── src/                    # Dashboard JSON (*.lvdash.json)
 ```
 
 ## Targets
 
-| Target | Purpose | Triggered by |
-|--------|---------|--------------|
-| dev | Local validation and generate commands | Manual |
-| staging | Staging environment | Push to `staging` branch |
-| prod | Production environment | Push to `prod` branch |
+| Target | Mode | Deploys via | Triggered by |
+|--------|------|-------------|--------------|
+| dev | local | n/a (validate/generate only) | Manual / push to `dev` |
+| staging | production | service principal (`run_as`) | Merge to `staging` |
+| prod | production | service principal (`run_as`) | Merge to `prod` + approval |
 
 ## Variables
 
-Warehouse IDs are managed via variables in `databricks.yml`:
-
 ```yaml
 variables:
   warehouse_id:
-    description: SQL warehouse ID to use for the dashboard
-
-targets:
-  staging:
-    variables:
-      warehouse_id: <staging-warehouse-id>
-  prod:
-    variables:
-      warehouse_id: <prod-warehouse-id>
+    description: SQL warehouse ID for the dashboard
+  service_principal_id:
+    description: Application (client) ID of the CI/CD service principal
+    default: <sp-application-id>
 ```
 
-If you have dashboards that use different warehouses, define additional variables:
-
-```yaml
-variables:
-  warehouse_id:
-    description: Default warehouse
-  warehouse_id_analytics:
-    description: Analytics team warehouse
-```
+Per-target values (e.g. a distinct `warehouse_id` per environment) are set under
+each target's `variables:` block.
 
 ## GitHub Secrets
 
-Configure these secrets in your GitHub repository (Settings → Secrets → Actions):
+Configure under Settings → Secrets and variables → Actions:
 
 | Secret | Description |
 |--------|-------------|
-| `DATABRICKS_HOST` | Workspace URL (e.g., `https://your-workspace.cloud.databricks.com`) |
-| `DATABRICKS_CLIENT_ID` | Service principal's Application (client) ID |
+| `DATABRICKS_HOST` | Workspace URL |
+| `DATABRICKS_CLIENT_ID` | Service principal's **application (client) ID** |
 | `DATABRICKS_CLIENT_SECRET` | Service principal's OAuth secret |
 
 ### Setting up a Service Principal
 
-1. In Databricks: Admin Console → Service Principals → Add
-2. Generate an OAuth secret for the service principal
-3. Grant the service principal permissions to deploy and manage dashboards
+1. Create a service principal in the workspace (Settings → Identity and access → Service principals, or `databricks service-principals create --display-name ...`).
+2. Generate an OAuth secret for it (`databricks service-principal-secrets-proxy create <sp-id>`).
+3. Grant it access to deploy and manage the dashboards.
+4. Put the application ID and secret into the GitHub secrets above.
+
+> **Gotcha:** In `databricks.yml`, `service_principal_name` (in `permissions` and
+> `run_as`) must be the SP's **application ID**, not its display name — otherwise
+> deploys fail with `Principal ... does not exist`. Also keep `permissions`
+> **per-target**, not top-level: a top-level block applies to every target and
+> breaks if a principal doesn't exist in one of the workspaces.
+
+### The production approval gate
+
+`deploy-prod.yml` sets `environment: production`. For the gate to actually pause,
+create a `production` Environment (Settings → Environments) with a **required
+reviewer**. Without it, prod deploys run immediately with no approval.
+
+## Networking
+
+CI deploys from GitHub-hosted runners, whose IPs rotate across a large Azure range.
+If the target workspace enforces **IP access lists**, runner calls are blocked with
+`Source IP ... is blocked by Databricks IP ACL (403)`. Options: use a workspace
+without IP ACLs (e.g. Free Edition), a self-hosted runner with a static allowlisted
+IP, or GitHub larger runners with static IPs.
+
+## Rollback
+
+Every change is a commit on an environment branch, so rolling back is a git
+operation — never edit the dashboard directly in the workspace.
+
+```bash
+git checkout -b revert-bad-change
+git revert <bad-commit-sha>     # add -m 1 when reverting a merge commit
+git push origin revert-bad-change
+```
+
+Open a PR into the affected environment branch; merging it redeploys the previous
+definition. To redeploy a known-good version manually:
+
+```bash
+git checkout <good-commit-sha>
+databricks bundle deploy --target prod
+```
 
 ## Useful Commands
 
 ```bash
-# Validate bundle locally
-databricks bundle validate
-
-# Pull a dashboard from the workspace
-databricks bundle generate dashboard --existing-id <dashboard-id>
-
-# Deploy to a specific target (manual)
-databricks bundle deploy --target staging
-databricks bundle deploy --target prod
+databricks bundle validate --target staging          # validate a target
+databricks bundle generate dashboard --existing-id <id> --bind
+databricks bundle deploy --target staging            # manual deploy
+databricks bundle summary --target prod              # show deployed resources
 ```
 
 ## Documentation
